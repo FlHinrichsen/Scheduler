@@ -32,12 +32,14 @@ include_once($game_path . 'include/sql.php');
 ini_set('memory_limit', '200M');
 set_time_limit(240); // 4 minutes
 
-if(!empty($_SERVER['SERVER_SOFTWARE'])) {
+if(!empty($_SERVER['SERVER_SOFTWARE']) && !defined('IN_SCHEDULER')) {
     echo 'The scheduler can only be called by CLI!'; exit;
 }
 
-define('TICK_LOG_FILE', $game_path . 'logs/tick_'.date('d-m-Y', time()).'.log');
-define('IN_SCHEDULER', true); // we are in the scheduler...
+if(!defined('IN_SCHEDULER'))
+{
+	define('IN_SCHEDULER', true); // we are in the scheduler...
+}
 
 // include commons classes and functions
 include_once('commons.php');
@@ -491,9 +493,10 @@ if(($q_ship = $db->query($sql)) === false) {
     $sdl->error('Could not query shiprepair data! - SKIPPED');
 }
 else
-{
-    while($ship = $db->fetchrow($q_ship)) {
-
+{	
+    while($ship = $db->fetchrow($q_ship)) 
+	{
+		unset($res);
         $res[0]=round(0.7*($ship['resource_1']-$ship['resource_1']/$ship['value_5']*($ship['value_5']-$ship['hitpoints'])),0);
         $res[1]=round(0.7*($ship['resource_2']-$ship['resource_2']/$ship['value_5']*($ship['value_5']-$ship['hitpoints'])),0);
         $res[2]=round(0.7*($ship['resource_3']-$ship['resource_3']/$ship['value_5']*($ship['value_5']-$ship['hitpoints'])),0);
@@ -794,7 +797,10 @@ $sdl->finish_job('Future Humans Rewards');
 // ########################################################################################
 //BOT
 ini_set('memory_limit', '500M');
-define('FILE_PATH_hg',$game_path);
+if(!defined('FILE_PATH_hg'))
+{
+	define('FILE_PATH_hg',$game_path);
+}
 include_once('NPC_BOT.php');
 include_once('ferengi.php');
 include_once('borg.php');
